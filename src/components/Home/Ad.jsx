@@ -66,7 +66,7 @@ const Ad = () => {
         </div>
       </div>
       <Button
-        className="text-brown bg-yellow font-extrabold text-xl rounded-none py-6  px-4 items-center justify-center flex"
+        className="text-brown bg-yellow font-extrabold text-xl hover:bg-brown hover:text-yellow duration-300 rounded-none py-6  px-4 items-center justify-center flex"
         type="button"
       >
         ALWAYS TASTY BURGER
