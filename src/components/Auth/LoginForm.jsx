@@ -3,9 +3,11 @@ import { FiUser } from "react-icons/fi";
 import { RiLockPasswordLine } from "react-icons/ri";
 import { useSession, signIn, signOut } from "next-auth/react";
 import { BsGithub } from "react-icons/bs";
+import { FcGoogle } from "react-icons/fc";
+
 const LoginForm = ({ setShowLoginForm }) => {
   const { data: session } = useSession();
-  console.log(session);
+
   return (
     <Form
       name="normal_login"
@@ -17,13 +19,23 @@ const LoginForm = ({ setShowLoginForm }) => {
     >
       <div className="flex flex-col gap-2 mb-5">
         <Button
-          className="bg-[#22272b] text-white flex items-center gap-2 justify-center text-xl "
+          className="bg-[#22272b] text-white shadow-lg rounded-none flex items-center gap-2 justify-center text-xl "
           type="button"
           size="large"
-          onClick={() => signIn()}
+          onClick={() => signIn("github")}
           icon={<BsGithub />}
         >
-          Login with github
+          Continnue with github
+        </Button>
+        <Button
+          className="bg-white text-black shadow-lg rounded-none flex items-center gap-2 justify-center text-xl border 
+          border-[#1677ff]"
+          type="button"
+          size="large"
+          onClick={() => signIn("google")}
+          icon={<FcGoogle />}
+        >
+          Continnue with Google
         </Button>
         <Divider>Or</Divider>
       </div>
