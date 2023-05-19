@@ -1,14 +1,16 @@
 import React, { useState } from "react";
-import { Button, Checkbox, Form, Input, Select, Upload } from "antd";
+import { Button, Checkbox, Form, Input, Select, Upload, message } from "antd";
 import { RiLockPasswordLine } from "react-icons/ri";
 import { BsEnvelopeAt } from "react-icons/bs";
 import { FiUser } from "react-icons/fi";
 import { BiImageAdd } from "react-icons/bi";
 import { AiOutlineEyeInvisible, AiOutlineEye } from "react-icons/ai";
+import { signIn } from "next-auth/react";
 
-const RegisterForm = ({ setShowLoginForm }) => {
+const RegisterForm = ({ setShowLoginForm, setAuthModal }) => {
+  const [isSubmiting, setIsSubmiting] = useState(false);
   const [validEmail, setValidEmail] = useState("");
-
+  const [form] = Form.useForm();
   const normFile = (e) => {
     if (Array.isArray(e)) {
       return e;
@@ -16,14 +18,41 @@ const RegisterForm = ({ setShowLoginForm }) => {
     return e?.fileList;
   };
 
+  const submitRegisterForm = async (values) => {
+    try {
+      setIsSubmiting(true);
+      const res = await signIn("credentials", {
+        email: values.email,
+        password: values.password,
+        gender: values.gender,
+        firstName: values.firstName,
+        lastName: values.lastName,
+        redirect: false,
+        callbackUrl: "/",
+      });
+      if (res?.error) {
+        setIsSubmiting(false);
+        message.error("Invalid credentials");
+      } else {
+        setIsSubmiting(false);
+        form.resetFields();
+        setAuthModal(false);
+      }
+    } catch (error) {
+      setIsSubmiting(false);
+      message.error(error.message);
+    }
+  };
+
   return (
     <Form
+      form={form}
       name="register"
       className="register-form"
       initialValues={{
         remember: true,
       }}
-      onFinish={() => console.log()}
+      onFinish={submitRegisterForm}
     >
       <Form.Item
         className="flex items-center justify-center"
@@ -46,7 +75,7 @@ const RegisterForm = ({ setShowLoginForm }) => {
       <div className="flex items-start gap-5 justify-between">
         <div className="w-1/2">
           <Form.Item
-            name="name"
+            name="firstName"
             rules={[
               {
                 required: true,
@@ -145,16 +174,30 @@ const RegisterForm = ({ setShowLoginForm }) => {
           <Form.Item
             name="repaitPassword"
             prefix={<RiLockPasswordLine className="site-form-item-icon" />}
+            dependencies={["password"]}
+            hasFeedback
             rules={[
               {
                 required: true,
-                message: "Please input your Password!",
+                message: "Please confirm your Password!",
               },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue("password") === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(
+                    new Error(
+                      "The two passwords that you entered do not match!"
+                    )
+                  );
+                },
+              }),
             ]}
           >
             <Input.Password
               prefix={<RiLockPasswordLine className="site-form-item-icon" />}
-              placeholder="password"
+              placeholder="Confirm Password"
               iconRender={(visible) =>
                 visible ? <AiOutlineEye /> : <AiOutlineEyeInvisible />
               }
@@ -173,7 +216,12 @@ const RegisterForm = ({ setShowLoginForm }) => {
       </Form.Item>
 
       <Form.Item>
-        <Button type="primary" htmlType="submit" className="login-form-button">
+        <Button
+          type="primary"
+          htmlType="submit"
+          loading={isSubmiting}
+          className="login-form-button"
+        >
           Register
         </Button>
         <span className="mx-2"> Or </span>

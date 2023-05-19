@@ -1,32 +1,54 @@
-import { Button, Checkbox, Divider, Form, Input } from "antd";
+import { Button, Checkbox, Divider, Form, Input, message } from "antd";
 import { FiUser } from "react-icons/fi";
 import { RiLockPasswordLine } from "react-icons/ri";
 import { useSession, signIn, signOut } from "next-auth/react";
 import { BsGithub } from "react-icons/bs";
 import { FcGoogle } from "react-icons/fc";
+import { useState } from "react";
 
-const LoginForm = ({ setShowLoginForm }) => {
+const LoginForm = ({ setShowLoginForm, setAuthModal }) => {
+  const [isSubmiting, setIsSubmiting] = useState(false);
+
   const { data: session } = useSession();
+
+  const [form] = Form.useForm();
+
+  const submitLoginForm = async (values) => {
+    try {
+      setIsSubmiting(true);
+      const res = await signIn("credentials", {
+        email: values.email,
+        password: values.password,
+        redirect: false,
+
+        callbackUrl: "/",
+      });
+
+      if (res?.error) {
+        setIsSubmiting(false);
+        message.error("Invalid credentials");
+      } else {
+        setIsSubmiting(false);
+        form.resetFields();
+        setAuthModal(false);
+      }
+    } catch (error) {
+      setIsSubmiting(false);
+      message.error(error.message);
+    }
+  };
 
   return (
     <Form
+      form={form}
       name="normal_login"
       className="login-form"
       initialValues={{
         remember: true,
       }}
-      onFinish={() => console.log()}
+      onFinish={submitLoginForm}
     >
       <div className="flex flex-col gap-2 mb-5">
-        <Button
-          className="bg-[#22272b] text-white shadow-lg rounded-none flex items-center gap-2 justify-center text-xl "
-          type="button"
-          size="large"
-          onClick={() => signIn("github")}
-          icon={<BsGithub />}
-        >
-          Continnue with github
-        </Button>
         <Button
           className="bg-white text-black shadow-lg rounded-none flex items-center gap-2 justify-center text-xl border 
           border-[#1677ff]"
@@ -81,7 +103,12 @@ const LoginForm = ({ setShowLoginForm }) => {
       </Form.Item>
 
       <Form.Item>
-        <Button type="primary" htmlType="submit" className="login-form-button">
+        <Button
+          type="primary"
+          htmlType="submit"
+          loading={isSubmiting}
+          className="login-form-button"
+        >
           Log in
         </Button>
         <span className="mx-2"> Or </span>

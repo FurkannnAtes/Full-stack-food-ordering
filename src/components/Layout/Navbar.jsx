@@ -244,9 +244,15 @@ const Navbar = () => {
         </div>
 
         {showLoginForm ? (
-          <LoginForm setShowLoginForm={setShowLoginForm} />
+          <LoginForm
+            setAuthModal={setAuthModal}
+            setShowLoginForm={setShowLoginForm}
+          />
         ) : (
-          <RegisterForm setShowLoginForm={setShowLoginForm} />
+          <RegisterForm
+            setAuthModal={setAuthModal}
+            setShowLoginForm={setShowLoginForm}
+          />
         )}
       </Modal>
     </Layout>
