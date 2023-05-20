@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Button, Checkbox, Form, Input, Select, Upload, message } from "antd";
 import { RiLockPasswordLine } from "react-icons/ri";
 import { BsEnvelopeAt } from "react-icons/bs";
@@ -10,26 +10,57 @@ import { signIn } from "next-auth/react";
 const RegisterForm = ({ setShowLoginForm, setAuthModal }) => {
   const [isSubmiting, setIsSubmiting] = useState(false);
   const [validEmail, setValidEmail] = useState("");
+
   const [form] = Form.useForm();
+
   const normFile = (e) => {
     if (Array.isArray(e)) {
       return e;
     }
+
     return e?.fileList;
+  };
+
+  const allowedFileTypes = ["image/png", "image/jpeg", "video/webm"];
+  const beforeUpload = (file) => {
+    const fileType = file.type;
+    const isAllowed = allowedFileTypes.includes(fileType);
+
+    if (!isAllowed) {
+      message.error("Wrong file type. Please add a png, jpg, or webm file");
+
+      return false;
+    }
+
+    return isAllowed;
   };
 
   const submitRegisterForm = async (values) => {
     try {
       setIsSubmiting(true);
-      const res = await signIn("credentials", {
-        email: values.email,
-        password: values.password,
-        gender: values.gender,
-        firstName: values.firstName,
-        lastName: values.lastName,
-        redirect: false,
-        callbackUrl: "/",
-      });
+      if (isImage === false) {
+        const res = await signIn("credentials", {
+          email: values.email,
+          password: values.password,
+          gender: values.gender,
+          firstName: values.firstName,
+          lastName: values.lastName,
+          image: values.image,
+          redirect: false,
+          callbackUrl: "/",
+        });
+      } else {
+        const res = await signIn("credentials", {
+          email: values.email,
+          password: values.password,
+          gender: values.gender,
+          firstName: values.firstName,
+          lastName: values.lastName,
+          redirect: false,
+          callbackUrl: "/",
+        });
+      }
+
       if (res?.error) {
         setIsSubmiting(false);
         message.error("Invalid credentials");
@@ -59,16 +90,15 @@ const RegisterForm = ({ setShowLoginForm, setAuthModal }) => {
         valuePropName="fileList"
         getValueFromEvent={normFile}
       >
-        <Upload action="/upload.do" listType="picture-card">
+        <Upload
+          beforeUpload={beforeUpload}
+          listType="picture-circle"
+          maxCount={1}
+        >
           <div>
             <BiImageAdd />
-            <div
-              style={{
-                marginTop: 8,
-              }}
-            >
-              Upload
-            </div>
+
+            <div style={{ marginTop: 8 }}>Upload</div>
           </div>
         </Upload>
       </Form.Item>

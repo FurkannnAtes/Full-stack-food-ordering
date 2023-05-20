@@ -20,7 +20,6 @@ const LoginForm = ({ setShowLoginForm, setAuthModal }) => {
         email: values.email,
         password: values.password,
         redirect: false,
-
         callbackUrl: "/",
       });
 
