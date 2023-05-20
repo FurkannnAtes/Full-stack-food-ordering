@@ -1,4 +1,5 @@
 import React, { useRef, useState } from "react";
+import axios from "axios";
 import { Button, Checkbox, Form, Input, Select, Upload, message } from "antd";
 import { RiLockPasswordLine } from "react-icons/ri";
 import { BsEnvelopeAt } from "react-icons/bs";
@@ -10,6 +11,9 @@ import { signIn } from "next-auth/react";
 const RegisterForm = ({ setShowLoginForm, setAuthModal }) => {
   const [isSubmiting, setIsSubmiting] = useState(false);
   const [validEmail, setValidEmail] = useState("");
+  const [isImage, setIsImage] = useState("default");
+
+  const uploadInputRef = useRef(null);
 
   const [form] = Form.useForm();
 
@@ -28,46 +32,63 @@ const RegisterForm = ({ setShowLoginForm, setAuthModal }) => {
 
     if (!isAllowed) {
       message.error("Wrong file type. Please add a png, jpg, or webm file");
-
+      setIsImage("false");
       return false;
     }
-
+    setIsImage("true");
     return isAllowed;
   };
 
   const submitRegisterForm = async (values) => {
     try {
       setIsSubmiting(true);
-      if (isImage === false) {
-        const res = await signIn("credentials", {
-          email: values.email,
-          password: values.password,
-          gender: values.gender,
-          firstName: values.firstName,
-          lastName: values.lastName,
-          image: values.image,
-          redirect: false,
-          callbackUrl: "/",
-        });
-      } else {
-        const res = await signIn("credentials", {
-          email: values.email,
-          password: values.password,
-          gender: values.gender,
-          firstName: values.firstName,
-          lastName: values.lastName,
-          redirect: false,
-          callbackUrl: "/",
-        });
-      }
 
-      if (res?.error) {
-        setIsSubmiting(false);
-        message.error("Invalid credentials");
+      if (isImage !== "true") {
+        const res = await signIn("credentials", {
+          email: values.email,
+          password: values.password,
+          gender: values.gender,
+          firstName: values.firstName,
+          lastName: values.lastName,
+          redirect: false,
+          callbackUrl: "/",
+        });
+        if (res?.error) {
+          setIsSubmiting(false);
+          message.error("Invalid credentials");
+        } else {
+          setIsSubmiting(false);
+          form.resetFields();
+          setAuthModal(false);
+        }
       } else {
-        setIsSubmiting(false);
-        form.resetFields();
-        setAuthModal(false);
+        let fd = new FormData();
+        fd.append("file", uploadInputRef?.current?.fileList[0].originFileObj);
+        fd.append("upload_preset", "defaultPreset");
+        fd.append("cloud_name", process.env.NEXT_PUBLIC_CLOUD_NAME);
+        const profileImage = await axios.post(
+          `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUD_NAME}/image/upload`,
+          fd
+        );
+
+        const res = await signIn("credentials", {
+          email: values.email,
+          password: values.password,
+          gender: values.gender,
+          firstName: values.firstName,
+          lastName: values.lastName,
+          image: profileImage.data.secure_url,
+          redirect: false,
+          callbackUrl: "/",
+        });
+        if (res?.error) {
+          setIsSubmiting(false);
+          message.error("Invalid credentials");
+        } else {
+          setIsSubmiting(false);
+          form.resetFields();
+          setAuthModal(false);
+        }
       }
     } catch (error) {
       setIsSubmiting(false);
@@ -94,6 +115,8 @@ const RegisterForm = ({ setShowLoginForm, setAuthModal }) => {
           beforeUpload={beforeUpload}
           listType="picture-circle"
           maxCount={1}
+          ref={uploadInputRef}
+          onRemove={() => setIsImage("false")}
         >
           <div>
             <BiImageAdd />

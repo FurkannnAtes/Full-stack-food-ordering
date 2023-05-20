@@ -16,7 +16,8 @@ export const authOptions = {
         gender: { label: "Gender", type: "text" },
       },
       authorize: async (credentials) => {
-        const { email, password, firstName, lastName, gender } = credentials;
+        const { email, password, firstName, lastName, gender, image } =
+          credentials;
 
         await dbConnect();
 
@@ -43,6 +44,7 @@ export const authOptions = {
             lastName: existingUser.lastName,
             firstName: existingUser.firstName,
             gender: existingUser.gender,
+            image: existingUser.image,
           };
         }
 
@@ -58,6 +60,7 @@ export const authOptions = {
             firstName,
             gender,
             password: hashedPassword,
+            image: image || "/assets/defaultPP.png",
           });
           await newUser.save();
 
@@ -67,6 +70,7 @@ export const authOptions = {
             lastName: newUser.lastName,
             firstName: newUser.firstName,
             gender: newUser.gender,
+            image: newUser.image || "/assets/defaultPP.png",
           };
         }
       },
