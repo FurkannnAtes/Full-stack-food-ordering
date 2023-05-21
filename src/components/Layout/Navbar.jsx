@@ -127,6 +127,7 @@ const Navbar = () => {
             <>
               <Badge className="z-30 " count={9}>
                 <Button
+                  onClick={() => router.push("/basket")}
                   className="bg-brown text-white  items-center justify-center flex"
                   type="button"
                   icon={<FiShoppingCart />}
@@ -181,28 +182,43 @@ const Navbar = () => {
         className="bg-yellow "
       >
         <div className="flex items-center gap-2 ">
-          <Badge className="z-30 " count={9}>
-            <Button
-              className="bg-brown text-white  items-center justify-center flex"
-              type="button"
-              icon={<FiShoppingCart />}
-            />
-          </Badge>
-          <Dropdown
-            menu={{
-              items,
-            }}
-            placement="bottomRight"
-            arrow={{
-              pointAtCenter: true,
-            }}
-          >
-            <Button
-              className="bg-brown text-white  items-center justify-center flex"
-              type="button"
-              icon={<FaUser />}
-            ></Button>
-          </Dropdown>
+          {session ? (
+            <>
+              <Badge className="z-30 " count={9}>
+                <Button
+                  onClick={() => router.push("/basket")}
+                  className="bg-brown text-white  items-center justify-center flex"
+                  type="button"
+                  icon={<FiShoppingCart />}
+                />
+              </Badge>
+              <Dropdown
+                menu={{
+                  items,
+                }}
+                placement="bottomRight"
+                arrow={{
+                  pointAtCenter: true,
+                }}
+              >
+                <Button
+                  className="bg-brown text-white  items-center justify-center flex"
+                  type="button"
+                  icon={<FaUser />}
+                ></Button>
+              </Dropdown>
+            </>
+          ) : (
+            <>
+              <Button
+                onClick={() => setAuthModal(true)}
+                type="button"
+                className="bg-brown text-white items-center justify-center flex"
+              >
+                Sign up / Sign in
+              </Button>
+            </>
+          )}
           <Button
             className="bg-brown text-white items-center justify-center flex"
             type="button"

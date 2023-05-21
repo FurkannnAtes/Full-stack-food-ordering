@@ -187,10 +187,17 @@ const RegisterForm = ({ setShowLoginForm, setAuthModal }) => {
             }
             onChange={(e) => {
               setValidEmail("validating");
-
-              setTimeout(() => {
-                setValidEmail("success");
-              }, 2000);
+              axios
+                .post(`http://localhost:3000/api/auth/validEmail`, {
+                  email: e.target.value,
+                })
+                .then((res) => {
+                  setValidEmail(res?.data?.valid);
+                })
+                .catch((error) => {
+                  console.error(error);
+                  setValidEmail("error");
+                });
             }}
             hasFeedback
             rules={[
@@ -274,6 +281,7 @@ const RegisterForm = ({ setShowLoginForm, setAuthModal }) => {
           htmlType="submit"
           loading={isSubmiting}
           className="login-form-button"
+          disabled={validEmail === "error"}
         >
           Register
         </Button>
